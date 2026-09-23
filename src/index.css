@@ -1,0 +1,33 @@
+body {
+  background-color: #fff;
+  font-family: "Roboto", "Open Sans", sans-serif;
+  color: #2e2f42;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+p {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  cursor: pointer;
+}
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding-left: 0;
+}
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
