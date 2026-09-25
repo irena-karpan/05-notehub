@@ -7,7 +7,7 @@ import {
 import css from "../App/App.module.css";
 import NoteList from "../NoteList/NoteList";
 import { useState } from "react";
-import { createNote, fetchNotes } from "../../services/noteService";
+import { createNote, deleteNote, fetchNotes } from "../../services/noteService";
 import Pagination from "../Pagination/Pagination";
 import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
@@ -45,6 +45,22 @@ export default function App() {
     createMutation.mutate(newNote);
   };
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["query", searchQuery, currentPage],
+      });
+    },
+    onError: () => {
+      toast.error("Something went wrong! Please, try again!");
+    },
+  });
+
+  const handleDeleteMutation = (noteId: string) => {
+    deleteMutation.mutate(noteId);
+  };
+
   const isModalClose = () => setOnModalClose(false);
   const isModalOpen = () => setOnModalClose(true);
 
@@ -63,10 +79,12 @@ export default function App() {
           Create note +
         </button>
       </header>
-      {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
+      {data && data.notes.length > 0 && (
+        <NoteList deleteNote={handleDeleteMutation} notes={data.notes} />
+      )}
       {onModalClose && (
         <Modal onClose={isModalClose}>
-          <NoteForm createNote={handleCreateMutation} />
+          <NoteForm createNote={handleCreateMutation} onClose={isModalClose} />
         </Modal>
       )}
       <Toaster />

@@ -6,6 +6,7 @@ import type { NoteTag } from "../../types/note";
 
 interface NoteFormProps {
   createNote: (newNote: NoteTag) => void;
+  onClose: () => void;
 }
 
 interface InitialValues {
@@ -20,7 +21,7 @@ const noteFormValues: InitialValues = {
   tag: "Todo",
 };
 
-export default function NoteForm({ createNote }: NoteFormProps) {
+export default function NoteForm({ createNote, onClose }: NoteFormProps) {
   const noteFormId = useId();
 
   const handleSubmit = (
@@ -90,7 +91,7 @@ export default function NoteForm({ createNote }: NoteFormProps) {
         </div>
 
         <div className={css.actions}>
-          <button type="button" className={css.cancelButton}>
+          <button onClick={onClose} type="button" className={css.cancelButton}>
             Cancel
           </button>
           <button type="submit" className={css.submitButton} disabled={false}>
