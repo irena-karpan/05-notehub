@@ -30,7 +30,7 @@ export async function fetchNotes(
 }
 
 export async function createNote(newNoteText: NoteTag) {
-  const responce = await axios.post("/notes", newNoteText);
+  const responce = await axios.post("/note", newNoteText);
   return responce;
 }
 

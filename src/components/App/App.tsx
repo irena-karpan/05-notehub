@@ -1,22 +1,49 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import css from "../App/App.module.css";
 import NoteList from "../NoteList/NoteList";
 import { useState } from "react";
-import { fetchNotes } from "../../services/noteService";
+import { createNote, fetchNotes } from "../../services/noteService";
 import Pagination from "../Pagination/Pagination";
 import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
+import type { NoteTag } from "../../types/note";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [onModalClose, setOnModalClose] = useState(false);
 
+  const queryClient = useQueryClient();
+
   const { data } = useQuery({
     queryKey: ["query", searchQuery, currentPage],
     queryFn: () => fetchNotes(searchQuery, currentPage),
     placeholderData: keepPreviousData,
   });
+
+  const createMutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["query", searchQuery, currentPage],
+      });
+      isModalClose();
+    },
+    onError: () => {
+      toast.error("Something went wrong! Please, try again!");
+      isModalClose();
+    },
+  });
+
+  const handleCreateMutation = (newNote: NoteTag) => {
+    createMutation.mutate(newNote);
+  };
 
   const isModalClose = () => setOnModalClose(false);
   const isModalOpen = () => setOnModalClose(true);
@@ -32,8 +59,6 @@ export default function App() {
             setPage={setCurrentPage}
           />
         )}
-
-        {/* Кнопка створення нотатки */}
         <button onClick={isModalOpen} className={css.button}>
           Create note +
         </button>
@@ -41,9 +66,10 @@ export default function App() {
       {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
       {onModalClose && (
         <Modal onClose={isModalClose}>
-          <NoteForm/>
+          <NoteForm createNote={handleCreateMutation} />
         </Modal>
       )}
+      <Toaster />
     </div>
   );
 }

@@ -2,6 +2,11 @@ import { ErrorMessage, Field, Form, Formik, type FormikHelpers } from "formik";
 import css from "../NoteForm/NoteForm.module.css";
 import * as Yup from "yup";
 import { useId } from "react";
+import type { NoteTag } from "../../types/note";
+
+interface NoteFormProps {
+  createNote: (newNote: NoteTag) => void;
+}
 
 interface InitialValues {
   title: string;
@@ -15,14 +20,14 @@ const noteFormValues: InitialValues = {
   tag: "Todo",
 };
 
-export default function NoteForm() {
+export default function NoteForm({ createNote }: NoteFormProps) {
   const noteFormId = useId();
 
   const handleSubmit = (
     values: InitialValues,
     actions: FormikHelpers<InitialValues>,
   ) => {
-    console.log("Mutation fn", values);
+    createNote(values);
     actions.resetForm();
   };
 
