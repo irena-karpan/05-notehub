@@ -6,6 +6,7 @@ axios.defaults.headers.Authorization = `Bearer ${import.meta.env.VITE_NOTEHUB_TO
 
 interface FetchNotesResponce {
   notes: Note[];
+  totalPages: number;
 }
 
 // interface NewNote {
@@ -17,7 +18,7 @@ interface FetchNotesResponce {
 export async function fetchNotes(
   search: string,
   page: number,
-): Promise<Note[]> {
+): Promise<FetchNotesResponce> {
   const responce = await axios.get<FetchNotesResponce>("/notes", {
     params: {
       search,
@@ -25,7 +26,7 @@ export async function fetchNotes(
       perPage: 12,
     },
   });
-  return responce.data.notes;
+  return responce.data;
 }
 
 export async function createNote(newNoteText: NoteTag) {

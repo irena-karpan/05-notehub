@@ -3,6 +3,7 @@ import css from "../App/App.module.css";
 import NoteList from "../NoteList/NoteList";
 import { useState } from "react";
 import { fetchNotes } from "../../services/noteService";
+import Pagination from "../Pagination/Pagination";
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,10 +19,17 @@ export default function App() {
     <div className={css.app}>
       <header className={css.toolbar}>
         {/* Компонент SearchBox */}
-        {/* Пагінація */}
+        {data && data.totalPages > 1 && (
+          <Pagination
+            totalPages={data.totalPages}
+            page={currentPage}
+            setPage={setCurrentPage}
+          />
+        )}
+
         {/* Кнопка створення нотатки */}
       </header>
-      {data && data.length > 0 && <NoteList notes={data} />}
+      {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
     </div>
   );
 }
