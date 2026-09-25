@@ -13,6 +13,10 @@ import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
 import type { NoteTag } from "../../types/note";
 import toast, { Toaster } from "react-hot-toast";
+import SearchBox from "../SearchBox/SearchBox";
+import { useDebouncedCallback } from "use-debounce";
+import Loader from "../Loader/Loader";
+import UsersError from "../UsersError/UsersError";
 
 export default function App() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,7 +25,7 @@ export default function App() {
 
   const queryClient = useQueryClient();
 
-  const { data } = useQuery({
+  const { data, isError, isLoading, isFetching, error } = useQuery({
     queryKey: ["query", searchQuery, currentPage],
     queryFn: () => fetchNotes(searchQuery, currentPage),
     placeholderData: keepPreviousData,
@@ -61,13 +65,20 @@ export default function App() {
     deleteMutation.mutate(noteId);
   };
 
+  const handleSearchQuery = useDebouncedCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(event.target.value);
+    },
+    300,
+  );
+
   const isModalClose = () => setOnModalClose(false);
   const isModalOpen = () => setOnModalClose(true);
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        {/* Компонент SearchBox */}
+        <SearchBox value={searchQuery} handleChange={handleSearchQuery} />
         {data && data.totalPages > 1 && (
           <Pagination
             totalPages={data.totalPages}
@@ -79,6 +90,8 @@ export default function App() {
           Create note +
         </button>
       </header>
+      {(isLoading || isFetching) && <Loader />}
+      {isError && <UsersError errorMessage={error.message} />}
       {data && data.notes.length > 0 && (
         <NoteList deleteNote={handleDeleteMutation} notes={data.notes} />
       )}
