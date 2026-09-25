@@ -1,18 +1,13 @@
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import css from "../App/App.module.css";
 import NoteList from "../NoteList/NoteList";
 import { useState } from "react";
-import { createNote, deleteNote, fetchNotes } from "../../services/noteService";
+import { fetchNotes } from "../../services/noteService";
 import Pagination from "../Pagination/Pagination";
 import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
-import type { NoteTag } from "../../types/note";
-import toast, { Toaster } from "react-hot-toast";
+
+import { Toaster } from "react-hot-toast";
 import SearchBox from "../SearchBox/SearchBox";
 import { useDebouncedCallback } from "use-debounce";
 import Loader from "../Loader/Loader";
@@ -23,51 +18,16 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [onModalClose, setOnModalClose] = useState(false);
 
-  const queryClient = useQueryClient();
-
   const { data, isError, isLoading, isFetching, error } = useQuery({
     queryKey: ["query", searchQuery, currentPage],
     queryFn: () => fetchNotes(searchQuery, currentPage),
     placeholderData: keepPreviousData,
   });
 
-  const createMutation = useMutation({
-    mutationFn: createNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["query", searchQuery, currentPage],
-      });
-      isModalClose();
-    },
-    onError: () => {
-      toast.error("Something went wrong! Please, try again!");
-      isModalClose();
-    },
-  });
-
-  const handleCreateMutation = (newNote: NoteTag) => {
-    createMutation.mutate(newNote);
-  };
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["query", searchQuery, currentPage],
-      });
-    },
-    onError: () => {
-      toast.error("Something went wrong! Please, try again!");
-    },
-  });
-
-  const handleDeleteMutation = (noteId: string) => {
-    deleteMutation.mutate(noteId);
-  };
-
   const handleSearchQuery = useDebouncedCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(event.target.value);
+      setCurrentPage(1);
     },
     300,
   );
@@ -92,12 +52,10 @@ export default function App() {
       </header>
       {(isLoading || isFetching) && <Loader />}
       {isError && <UsersError errorMessage={error.message} />}
-      {data && data.notes.length > 0 && (
-        <NoteList deleteNote={handleDeleteMutation} notes={data.notes} />
-      )}
+      {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
       {onModalClose && (
         <Modal onClose={isModalClose}>
-          <NoteForm createNote={handleCreateMutation} onClose={isModalClose} />
+          <NoteForm onClose={isModalClose} />
         </Modal>
       )}
       <Toaster />

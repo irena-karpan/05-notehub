@@ -2,10 +2,12 @@ import { ErrorMessage, Field, Form, Formik, type FormikHelpers } from "formik";
 import css from "../NoteForm/NoteForm.module.css";
 import * as Yup from "yup";
 import { useId } from "react";
-import type { NoteTag } from "../../types/note";
+import type { NewNote } from "../../types/note";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { createNote } from "../../services/noteService";
 
 interface NoteFormProps {
-  createNote: (newNote: NoteTag) => void;
   onClose: () => void;
 }
 
@@ -21,14 +23,33 @@ const noteFormValues: InitialValues = {
   tag: "Todo",
 };
 
-export default function NoteForm({ createNote, onClose }: NoteFormProps) {
+export default function NoteForm({ onClose }: NoteFormProps) {
   const noteFormId = useId();
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["query"],
+      });
+      onClose();
+    },
+    onError: () => {
+      toast.error("Something went wrong! Please, try again!");
+      onClose();
+    },
+  });
+
+  const handleCreateMutation = (newNote: NewNote) => {
+    createMutation.mutate(newNote);
+  };
 
   const handleSubmit = (
     values: InitialValues,
     actions: FormikHelpers<InitialValues>,
   ) => {
-    createNote(values);
+    handleCreateMutation(values);
     actions.resetForm();
   };
 
@@ -37,7 +58,7 @@ export default function NoteForm({ createNote, onClose }: NoteFormProps) {
       .min(3, "Title too short")
       .max(50, "Title too long")
       .required("Title is required"),
-    content: Yup.string().max(500, "Content too long").required(),
+    content: Yup.string().max(500, "Content too long"),
     tag: Yup.string()
       .oneOf(["Todo", "Work", "Personal", "Meeting", "Shopping"])
       .required("Select tag"),
