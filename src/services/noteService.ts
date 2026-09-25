@@ -13,14 +13,14 @@ export async function fetchNotes(
   search: string,
   page: number,
 ): Promise<FetchNotesResponse> {
-  const responce = await axios.get<FetchNotesResponse>("/notes", {
+  const response = await axios.get<FetchNotesResponse>("/notes", {
     params: {
       search,
       page,
       perPage: 12,
     },
   });
-  return responce.data;
+  return response.data;
 }
 
 export async function createNote(newNoteText: NewNote): Promise<Note> {
